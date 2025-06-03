@@ -1,6 +1,6 @@
-name: Pipeline de Teste Ruby
+name: 🧪 Pipeline de Teste Ruby
 
-# Dispara o workflow quando houver push ou pull request na branch main
+# 🚀 Dispara o workflow quando houver push ou pull request na branch main
 on:
   push:
     branches: [main]
@@ -9,16 +9,16 @@ on:
 
 jobs:
   build-and-test:
-    name: Build e Testes
+    name: 🔧 Build e Testes
     runs-on: ubuntu-latest  # Usa uma máquina Ubuntu na nuvem
 
     steps:
-      # Baixa o código do repositório
-      - name: Checkout do código
+      # 📥 Baixa o código do repositório
+      - name: 📥 Checkout do código
         uses: actions/checkout@v3
 
-      # Instala o Ruby via RVM (exemplo com Ruby 3.2.2)
-      - name: Instalar Ruby com RVM
+      # 🛠️ Instala o Ruby via RVM (exemplo com Ruby 3.2.2)
+      - name: 💎 Instalar Ruby com RVM
         run: |
           sudo apt-get update
           sudo apt-get install software-properties-common -y
@@ -30,8 +30,8 @@ jobs:
           rvm use 3.2.2 --default
           ruby --version
 
-      #  Usa cache para acelerar instalação de gems (evita downloads repetidos)
-      - name: Cache de dependências Ruby
+      # 💾 Usa cache para acelerar instalação de gems (evita downloads repetidos)
+      - name: 💾 Cache de dependências Ruby
         uses: actions/cache@v3
         with:
           path: vendor/bundle
@@ -39,47 +39,47 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gems-
 
-      # Instala o Bundler e as gems do projeto
-      - name: Instalar dependências com Bundler
+      # 📦 Instala o Bundler e as gems do projeto
+      - name: 📦 Instalar dependências com Bundler
         run: |
           gem install bundler
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
 
-      #  Executa os testes com RSpec (ou troque por MiniTest, etc.)
-      - name: Executar testes automatizados
+      # 🔍 Executa os testes com RSpec (ou troque por MiniTest, etc.)
+      - name: 🔍 Executar testes automatizados
         run: |
           bundle exec rspec --format documentation
 
-      # Garante que o código segue padrões de estilo com RuboCop
-      - name: Verificar estilo de código com RuboCop
+      # ✅ Garante que o código segue padrões de estilo com RuboCop
+      - name: ✅ Verificar estilo de código com RuboCop
         run: |
           gem install rubocop
           rubocop || true  # Evita falha total por causa de estilo
 
-      #  Gera relatório de cobertura de testes com SimpleCov
-      - name:  Gerar cobertura de testes
+      # 🧪 Gera relatório de cobertura de testes com SimpleCov
+      - name: 🧪 Gerar cobertura de testes
         run: |
           # Certifique-se de que seu projeto use SimpleCov
           echo "A cobertura será gerada na pasta coverage/"
 
-      # Salva logs e resultados da cobertura como artefatos
-      - name: Salvar logs e cobertura
+      # 📤 Salva logs e resultados da cobertura como artefatos
+      - name: 📤 Salvar logs e cobertura
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: relatorios-de-testes
           path: |
             log/
             coverage/
 
-      # Envia notificação (exemplo usando Slack)
-      # - name: Notificar no Slack
+      # 📣 Envia notificação (exemplo usando Slack)
+      # - name: 📣 Notificar no Slack
       #   uses: slackapi/slack-github-action@v1.23.0
       #   with:
       #     payload: |
       #       {
-      #         "text": " CI finalizado para ${{ github.repository }} – Status: ${{ job.status }}"
+      #         "text": "🚀 CI finalizado para ${{ github.repository }} – Status: ${{ job.status }}"
       #       }
       #   env:
       #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
