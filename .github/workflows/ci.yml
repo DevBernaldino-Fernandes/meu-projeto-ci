@@ -1,0 +1,22 @@
+name: Pipeline de Teste
+
+# Quando essa automação será executada
+on:
+  push:
+    branches:
+      - main  # executa ao enviar algo para a branch 'main'
+
+# O que será feito
+jobs:
+  build:
+    runs-on: ubuntu-latest  # GitHub usará uma máquina virtual Ubuntu
+
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v2
+
+      - name: Instalar dependências Ruby
+        run: sudo apt-get install rubygems ruby-dev -y
+
+      - name: Mostrar versão do Ruby
+        run: ruby --version
