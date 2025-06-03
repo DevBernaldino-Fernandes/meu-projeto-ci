@@ -1,46 +1,22 @@
 name: Pipeline de Teste
 
+# Quando essa automação será executada
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main  # executa ao enviar algo para a branch 'main'
 
+# O que será feito
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # GitHub usará uma máquina virtual Ubuntu
 
     steps:
       - name: Baixar código do repositório
         uses: actions/checkout@v2
 
-      - name: Instalar dependências do sistema
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ruby-full build-essential zlib1g-dev
+      - name: Instalar dependências Ruby
+        run: sudo apt-get install rubygems ruby-dev -y
 
-      - name: Configurar ambiente Ruby
-        run: |
-          echo 'export GEM_HOME="$HOME/gems"' >> $GITHUB_ENV
-          echo 'export PATH="$HOME/gems/bin:$PATH"' >> $GITHUB_ENV
-
-      - name: Instalar bundler
-        run: gem install bundler
-
-      - name: Instalar dependências do projeto
-        run: bundle install
-
-      - name: Verificar versão do Ruby
+      - name: Mostrar versão do Ruby
         run: ruby --version
-
-      - name: Rodar testes com RSpec
-        run: bundle exec rspec
-
-      - name: Analisar código com RuboCop
-        run: bundle exec rubocop
-
-      - name: Deploy (simulado)
-        if: github.ref == 'refs/heads/main' && success()
-        run: echo "Deploy realizado com sucesso (simulado)."
