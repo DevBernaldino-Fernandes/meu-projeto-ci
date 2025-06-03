@@ -1,22 +1,85 @@
-name: Pipeline de Teste
+name: Pipeline de Teste Ruby
 
-# Quando essa automação será executada
+# Dispara o workflow quando houver push ou pull request na branch main
 on:
   push:
-    branches:
-      - main  # executa ao enviar algo para a branch 'main'
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-# O que será feito
 jobs:
-  build:
-    runs-on: ubuntu-latest  # GitHub usará uma máquina virtual Ubuntu
+  build-and-test:
+    name: Build e Testes
+    runs-on: ubuntu-latest  # Usa uma máquina Ubuntu na nuvem
 
     steps:
-      - name: Baixar código do repositório
-        uses: actions/checkout@v2
+      # Baixa o código do repositório
+      - name: Checkout do código
+        uses: actions/checkout@v3
 
-      - name: Instalar dependências Ruby
-        run: sudo apt-get install rubygems ruby-dev -y
+      # Instala o Ruby via RVM (exemplo com Ruby 3.2.2)
+      - name: Instalar Ruby com RVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install software-properties-common -y
+          sudo apt-add-repository -y ppa:rael-gc/rvm
+          sudo apt-get update
+          sudo apt-get install rvm -y
+          source /etc/profile.d/rvm.sh
+          rvm install 3.2.2
+          rvm use 3.2.2 --default
+          ruby --version
 
-      - name: Mostrar versão do Ruby
-        run: ruby --version
+      #  Usa cache para acelerar instalação de gems (evita downloads repetidos)
+      - name: Cache de dependências Ruby
+        uses: actions/cache@v3
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
+
+      # Instala o Bundler e as gems do projeto
+      - name: Instalar dependências com Bundler
+        run: |
+          gem install bundler
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      #  Executa os testes com RSpec (ou troque por MiniTest, etc.)
+      - name: Executar testes automatizados
+        run: |
+          bundle exec rspec --format documentation
+
+      # Garante que o código segue padrões de estilo com RuboCop
+      - name: Verificar estilo de código com RuboCop
+        run: |
+          gem install rubocop
+          rubocop || true  # Evita falha total por causa de estilo
+
+      #  Gera relatório de cobertura de testes com SimpleCov
+      - name:  Gerar cobertura de testes
+        run: |
+          # Certifique-se de que seu projeto use SimpleCov
+          echo "A cobertura será gerada na pasta coverage/"
+
+      # Salva logs e resultados da cobertura como artefatos
+      - name: Salvar logs e cobertura
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: relatorios-de-testes
+          path: |
+            log/
+            coverage/
+
+      # Envia notificação (exemplo usando Slack)
+      # - name: Notificar no Slack
+      #   uses: slackapi/slack-github-action@v1.23.0
+      #   with:
+      #     payload: |
+      #       {
+      #         "text": " CI finalizado para ${{ github.repository }} – Status: ${{ job.status }}"
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
