@@ -1,85 +1,46 @@
-name: 🧪 Pipeline de Teste Ruby
+name: Pipeline de Teste
 
-# 🚀 Dispara o workflow quando houver push ou pull request na branch main
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build-and-test:
-    name: 🔧 Build e Testes
-    runs-on: ubuntu-latest  # Usa uma máquina Ubuntu na nuvem
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      # 📥 Baixa o código do repositório
-      - name: 📥 Checkout do código
-        uses: actions/checkout@v3
+      - name: Baixar código do repositório
+        uses: actions/checkout@v2
 
-      # 🛠️ Instala o Ruby via RVM (exemplo com Ruby 3.2.2)
-      - name: 💎 Instalar Ruby com RVM
+      - name: Instalar dependências do sistema
         run: |
           sudo apt-get update
-          sudo apt-get install software-properties-common -y
-          sudo apt-add-repository -y ppa:rael-gc/rvm
-          sudo apt-get update
-          sudo apt-get install rvm -y
-          source /etc/profile.d/rvm.sh
-          rvm install 3.2.2
-          rvm use 3.2.2 --default
-          ruby --version
+          sudo apt-get install -y ruby-full build-essential zlib1g-dev
 
-      # 💾 Usa cache para acelerar instalação de gems (evita downloads repetidos)
-      - name: 💾 Cache de dependências Ruby
-        uses: actions/cache@v3
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-
-
-      # 📦 Instala o Bundler e as gems do projeto
-      - name: 📦 Instalar dependências com Bundler
+      - name: Configurar ambiente Ruby
         run: |
-          gem install bundler
-          bundle config path vendor/bundle
-          bundle install --jobs 4 --retry 3
+          echo 'export GEM_HOME="$HOME/gems"' >> $GITHUB_ENV
+          echo 'export PATH="$HOME/gems/bin:$PATH"' >> $GITHUB_ENV
 
-      # 🔍 Executa os testes com RSpec (ou troque por MiniTest, etc.)
-      - name: 🔍 Executar testes automatizados
-        run: |
-          bundle exec rspec --format documentation
+      - name: Instalar bundler
+        run: gem install bundler
 
-      # ✅ Garante que o código segue padrões de estilo com RuboCop
-      - name: ✅ Verificar estilo de código com RuboCop
-        run: |
-          gem install rubocop
-          rubocop || true  # Evita falha total por causa de estilo
+      - name: Instalar dependências do projeto
+        run: bundle install
 
-      # 🧪 Gera relatório de cobertura de testes com SimpleCov
-      - name: 🧪 Gerar cobertura de testes
-        run: |
-          # Certifique-se de que seu projeto use SimpleCov
-          echo "A cobertura será gerada na pasta coverage/"
+      - name: Verificar versão do Ruby
+        run: ruby --version
 
-      # 📤 Salva logs e resultados da cobertura como artefatos
-      - name: 📤 Salvar logs e cobertura
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: relatorios-de-testes
-          path: |
-            log/
-            coverage/
+      - name: Rodar testes com RSpec
+        run: bundle exec rspec
 
-      # 📣 Envia notificação (exemplo usando Slack)
-      # - name: 📣 Notificar no Slack
-      #   uses: slackapi/slack-github-action@v1.23.0
-      #   with:
-      #     payload: |
-      #       {
-      #         "text": "🚀 CI finalizado para ${{ github.repository }} – Status: ${{ job.status }}"
-      #       }
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Analisar código com RuboCop
+        run: bundle exec rubocop
+
+      - name: Deploy (simulado)
+        if: github.ref == 'refs/heads/main' && success()
+        run: echo "Deploy realizado com sucesso (simulado)."
